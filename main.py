@@ -1,43 +1,87 @@
 import os
 import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import winsound
 import getpass
 import ctypes as types
-import re
 import tkinter as tk
 import winreg
 import random
 import pickle 
 
-
-print(''' Minimum 8 characters.
-            The alphabets must be between [a-z]
-            At least one alphabet should be of Upper Case [A-Z]
-            At least 1 number or digit between [0-9].
-            At least 1 character from [ _ or @ or $ ].''')
-
-            
+print('''Note for Gmail Users, you need to generate an app password instead of your normal email password. 
+         This also requires enabling 2-step authentication. 
+         Follow the instructions here to set-up 2-Step Factor Authentication as well as App Password Generation:https://support.google.com/accounts/answer/185833?hl=en/. 
+         Set-up 2 Factor Authentication, then create the App Password, choose Mail as the App and give it any name you want. 
+         This will output a 16 letter password for you. Pass in this password as your login password for the smtp.'
+''')
 
 root = tk.Tk()
 root.title('Focus Mode Activation')
+x = ''
+for i in range(4):
+    x.append()
+
+INTERNET_SETTINGS = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+	r'Software\Microsoft\Windows\CurrentVersion\Internet Settings',
+	0, winreg.KEY_ALL_ACCESS)
+
+def set_key(name, value):
+	_, reg_type = winreg.QueryValueEx(INTERNET_SETTINGS, name)
+	winreg.SetValueEx(INTERNET_SETTINGS, name, 0, reg_type, value)
+
+def proxy_off():
+	set_key('ProxyEnable', 0)
+	
+	INTERNET_OPTION_REFRESH = 37
+	INTERNET_OPTION_SETTINGS_CHANGED = 39
+
+	internet_set_option = ctypes.windll.Wininet.InternetSetOptionW
+
+	internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
+	internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)	
+
+def proxy_on():
+	set_key('ProxyEnable', 1)
+	set_key('ProxyServer', u'https://i.stack.imgur.com/gakS3.png:8080')
+	set_key('ProxyOverride', u'https://i.stack.imgur.com/gakS3.png:8080')
+
+	INTERNET_OPTION_REFRESH = 37
+	INTERNET_OPTION_SETTINGS_CHANGED = 39
+
+	internet_set_option = ctypes.windll.Wininet.InternetSetOptionW
+
+	internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
+	internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)
+
+from_address = 'noreply123.inthezone@gmail.com'  #password of google=random123! 
+to_address = getpass.getpass("Enter your email: ") #587-gmail port number
 
 def password():
-    password=input('Enter your password: ')
+    temporary=input('Enter your password: ')
     print(password)
-    if temporary == password:
+    if temporary == x:
         focus_mode()
         pickle.dump(password)
     if temporary != password:
-        exit()
+        while temporary != password:
+            if temporary != password:
+                print('INVALID PASSWORD - TRY AGAIN')
+                temporary = input('Enter your password: ')
+            else:
+                break
 
 
 def focus_mode():
     root1 = tk.Tk()
     def block_sites_label():
         mylabel = tk.Label(root1, text = "Starting to block sites").grid(row = 3, column = 0)
+        proxy_on()
 
     def unblock_sites_label():
         mylabel2 = tk.Label(root1, text="Starting to unblock sites").grid(row = 3, column = 1)
+        proxy_off()
 
     focus_mode_off = tk.Button(root1, text = "Turn Focus-Mode off", padx = 55, pady = 45, command = unblock_sites_label, bg = "red")
     focus_mode_on = tk.Button(root1, text = "Turn Focus-Mode on", padx = 50, pady = 45, command = block_sites_label, bg = "green")
