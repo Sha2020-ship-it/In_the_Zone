@@ -1,0 +1,7 @@
+1st audit ---> Dummy GUI
+
+2nd audit ---> Back end coding - WINREG, BLOCKING SITES
+
+3rd audit ---> Connecting the two together
+
+4th audit ---> Presentation and extra features (future plan)
