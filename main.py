@@ -10,39 +10,52 @@ import time
 from datetime import datetime as dt
 import winreg
 import random
+import pickle
+import tkinter as tk
+import winreg as winreg
+import ctypes 
+import requests
+import math
+import re
+import os
+import webbrowser
 
 INTERNET_SETTINGS = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-    r'Software\Microsoft\Windows\CurrentVersion\Internet Settings',
-    0, winreg.KEY_ALL_ACCESS)
+	r'Software\Microsoft\Windows\CurrentVersion\Internet Settings',
+	0, winreg.KEY_ALL_ACCESS)
 
 def set_key(name, value):
-    _, reg_type = winreg.QueryValueEx(INTERNET_SETTINGS, name)
-    winreg.SetValueEx(INTERNET_SETTINGS, name, 0, reg_type, value)
+	_, reg_type = winreg.QueryValueEx(INTERNET_SETTINGS, name)
+	winreg.SetValueEx(INTERNET_SETTINGS, name, 0, reg_type, value)
 
 def proxy_off():
-    set_key('ProxyEnable', 0)
-    
-    INTERNET_OPTION_REFRESH = 37
-    INTERNET_OPTION_SETTINGS_CHANGED = 39
+	set_key('ProxyEnable', 0)
+	
+	INTERNET_OPTION_REFRESH = 37
+	INTERNET_OPTION_SETTINGS_CHANGED = 39
 
-    internet_set_option = ctypes.windll.Wininet.InternetSetOptionW
+	internet_set_option = ctypes.windll.Wininet.InternetSetOptionW
 
-    internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
-    internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)   
+	internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
+	internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)	
 
 def proxy_on():
-    set_key('ProxyEnable', 1)
+	set_key('ProxyEnable', 1)
 
-    INTERNET_OPTION_REFRESH = 37
-    INTERNET_OPTION_SETTINGS_CHANGED = 39
+	set_key('ProxyServer', u'https://teams.microsoft.com:443')
+	set_key('ProxyOverride', u'https://teams.microsoft.com:443')
 
-    internet_set_option = ctypes.windll.Wininet.InternetSetOptionW
+	INTERNET_OPTION_REFRESH = 37
+	INTERNET_OPTION_SETTINGS_CHANGED = 39
 
-    internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
-    internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)
+	internet_set_option = ctypes.windll.Wininet.InternetSetOptionW
+
+	internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
+	internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)
 
 def focus_mode():
     root1 = tk.Tk()
+    root1.title('In The Zone! - Focus Generator')
     def block_sites_label():
         mylabel = tk.Label(root1, text = "Starting to block sites").grid(row = 3, column = 0)
         proxy_on()
@@ -58,19 +71,6 @@ def focus_mode():
 
     e.insert(0, "Add sites that you want to unblock. Seperate with comma ','")
 
-    unblock = str(e.get())
-    unblock.split(',')
-    for website in unblock:
-        if 'https' in website:
-            set_key('ProxyServer', u'{}:443'.format(website))
-            set_key('ProxyOverride', u'{}:443'.format(website))
-        elif 'http' in website:
-            set_key('ProxyServer', u'{}:80'.format(website))
-            set_key('ProxyOverride', u'{}:80'.format(website))
-        elif 'ftp' in website:
-            set_key('ProxyServer', u'{}:21'.format(website))
-            set_key('ProxyOverride', u'{}:21'.format(website))
-
     e.grid(row = 0, column = 0, columnspan = 4)
 
     focus_mode_on.grid(row = 2, column = 0)
@@ -80,6 +80,7 @@ def focus_mode():
 
 def block():
     root2 = tk.Tk()
+    root2.title('In The Zone! - Website Blocker (MACOS)')
     host_path ='C:\Windows\System32\drivers\etc\hosts'
     ip_address = '127.0.0.1'
     tk.Label(root2, text ='WEBSITE BLOCKER' , font ='arial 20 bold').pack()
@@ -91,7 +92,7 @@ def block():
         sites_to_block = sites_to_block.split(',')
         Linux_host = '/etc/hosts'
         Window_host = r"C:\Windows\System32\drivers\etc\hosts"
-        default_hoster = Window_host
+        default_hoster = Linux_host
         redirect = "127.0.0.1"
         def block_websites(start_hour , end_hour):
             while True:
@@ -115,29 +116,30 @@ def block():
     block.place(x = 230, y = 150)
     
     root2.mainloop()
+    
 
 def menu():
     root = tk.Tk()
-    root.title('Focus Mode Activation')
+    root.title('In The Zone - Main Menu')
 
     bring_focus = tk.Button(root, text = 'Go to Proxy Server', padx = 45, pady = 45, command = focus_mode).grid(row = 0, column = 0)
     bring_block = tk.Button(root, text = 'Go to Website Blocker', padx = 45, pady = 45, command = block).grid(row = 0, column = 1)
 
     root.mainloop()
 
-def password():
+def password():                                                       
+    emailreciev = input('Enter your email: ')
     x = str(random.randint(1000,9999))
-    emailreciev = input("Please enter your email address, Only gmail: ")
     s = smtplib.SMTP('smtp.gmail.com', 587) 
     s.starttls() 
     s.login("noreply123.InTheZone@gmail.com", "random123!") 
-    message = (f"{x} is your password")
+    message = f"{x} is your password"
     s.sendmail("noreply123.InTheZone@gmail.com", emailreciev, message) 
     s.quit()
     code = input('Check your mail - Enter the code you got: ')
     if code == x:
         print('Accepted!')
-        print('You can acess the software.')
+        print('You can access the software.')
         menu()
     else:
         for i in range(3):
