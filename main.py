@@ -6,9 +6,9 @@ import winsound
 import getpass
 import ctypes as types
 import tkinter as tk
+import time
+from datetime import datetime as dt
 import winreg
-from time import *
-from datetime import *
 import random
 
 INTERNET_SETTINGS = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
@@ -87,28 +87,30 @@ def block():
     Websites.place(x= 140,y = 60)
 
     def Blocker():
-        host_path = r"C:\\Windows\\System32\\drivers\\etc\\hosts"  
-        redirect = "127.0.0.1"  
-
-        while True:  
-            if datetime(datetime.now().year,datetime.now().month,datetime.now().day,9)<datetime.now()<datetime(datetime.now().year,datetime.now().month,datetime.now().day,17):  
-                with open(host_path,"r+") as fileptr:  
-                    content = fileptr.read()  
-                    for website in websites:  
-                        if website in content:  
-                            pass  
-                        else:  
-                            fileptr.write(redirect+"        "+website+"\n")  
-            else:  
-                with open(host_path,'r+') as file:  
-                    content = file.readlines();  
-                    file.seek(0)  
-                    for line in content:  
-                        if not any(website in line for website in websites):  
-                            file.write(line)  
-                    file.truncate()  
-    sleep(5)  
-
+        sites_to_block = Websites.get(0.0, tk.END)
+        sites_to_block = sites_to_block.split(',')
+        Linux_host = '/etc/hosts'
+        Window_host = r"C:\Windows\System32\drivers\etc\hosts"
+        default_hoster = Window_host
+        redirect = "127.0.0.1"
+        def block_websites(start_hour , end_hour):
+            while True:
+                if dt(dt.now().year, dt.now().month, dt.now().day,start_hour)< dt.now() < dt(dt.now().year, dt.now().month, dt.now().day,end_hour): 
+                    with open(default_hoster, 'r+') as hostfile:
+                        hosts = hostfile.read()
+                        for site in sites_to_block:
+                            if site not in hosts:
+                                hostfile.write(redirect +' ' + site + '\n')
+                else:
+                    with open(default_hoster, 'r+') as hostfile:
+                        hosts = hostfile.readlines()
+                        hostfile.seek(0)
+                        for host in hosts:
+                            if not any(site in host for site in sites_to_block):
+                                hostfile.write(host)
+                        hostfile.truncate()
+                time.sleep(3)
+        block_websites(0, 1)
     block = tk.Button(root2, text = 'Block',pady = 5,command = Blocker ,width = 6, bg = 'red', activebackground = 'sky blue')
     block.place(x = 230, y = 150)
     
@@ -129,7 +131,7 @@ def password():
     s = smtplib.SMTP('smtp.gmail.com', 587) 
     s.starttls() 
     s.login("noreply123.InTheZone@gmail.com", "random123!") 
-    message = f"{x} is your password"
+    message = (f"{x} is your password")
     s.sendmail("noreply123.InTheZone@gmail.com", emailreciev, message) 
     s.quit()
     code = input('Check your mail - Enter the code you got: ')
@@ -144,7 +146,7 @@ def password():
                 code = input('Check your mail - Enter the code you got: ') 
             elif code == x:
                 print('Accepted!')
-                print('You can acess the software.')
+                print('You can access the software.')
                 menu()
 
 password()
