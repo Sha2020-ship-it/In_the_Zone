@@ -1,29 +1,85 @@
 import os
+import smtplib
 import winsound
+import getpass
 import ctypes as types
+import re
 import tkinter as tk
 import winreg
+import random
+import pickle 
+
+
+print(''' Minimum 8 characters.
+            The alphabets must be between [a-z]
+            At least one alphabet should be of Upper Case [A-Z]
+            At least 1 number or digit between [0-9].
+            At least 1 character from [ _ or @ or $ ].''')
+
+            
 
 root = tk.Tk()
-root.title('IN THE ZONE....')
+root.title('Focus Mode Activation')
 
-def block_sites_label():
-    mylabel = tk.Label(root, text = "Starting to block sites").grid(row = 2, column = 0)
+def password():
+    password=input('Enter your password: ')
+    print(password)
+    if temporary == password:
+        focus_mode()
+        pickle.dump(password)
+    if temporary != password:
+        exit()
 
-def unblock_sites_label():
-    mylabel2 = tk.Label(root, text="Starting to unblock sites").grid(row = 7, column = 0)
 
-focus_mode_off = tk.Button(root, text = "Turn Focus-Mode off", padx = 55, pady = 45, command = unblock_sites_label, bg = "red")
-focus_mode_on = tk.Button(root, text = "Turn Focus-Mode on", padx = 50, pady = 45, command = block_sites_label, bg = "green")
+def focus_mode():
+    root1 = tk.Tk()
+    def block_sites_label():
+        mylabel = tk.Label(root1, text = "Starting to block sites").grid(row = 3, column = 0)
 
-e = tk.Entry(root, width = 70)
+    def unblock_sites_label():
+        mylabel2 = tk.Label(root1, text="Starting to unblock sites").grid(row = 3, column = 1)
 
-e.insert(0, "Add sites that you want to unblock. Seperate with comma ','")
+    focus_mode_off = tk.Button(root1, text = "Turn Focus-Mode off", padx = 55, pady = 45, command = unblock_sites_label, bg = "red")
+    focus_mode_on = tk.Button(root1, text = "Turn Focus-Mode on", padx = 50, pady = 45, command = block_sites_label, bg = "green")
 
-e.grid(row = 0, column = 0, columnspan = 4)
+    e = tk.Entry(root1, width = 70)
 
-focus_mode_on.grid(row = 2, column = 0)
-focus_mode_off.grid(row = 2, column = 1)
+    e.insert(0, "Add sites that you want to unblock. Seperate with comma ','")
+
+    e.grid(row = 0, column = 0, columnspan = 4)
+
+    focus_mode_on.grid(row = 2, column = 0)
+    focus_mode_off.grid(row = 2, column = 1)
+
+    root.mainloop()
+
+def block():
+	root2 = tk.Tk()
+	host_path ='C:\Windows\System32\drivers\etc\hosts'
+	ip_address = '127.0.0.1'
+	tk.Label(root2, text ='WEBSITE BLOCKER' , font ='arial 20 bold').pack()
+	Websites = tk.Text(root2, font = 'arial 10', height='2', width = '40', wrap = tk.WORD, padx=5, pady=5)
+	Websites.place(x= 140,y = 60)
+
+	def Blocker():
+		website_lists = Websites.get(1.0,END)
+		Website = list(website_lists.split(","))
+		with open (host_path , 'r+') as host_file:
+			file_content = host_file.read()
+			for website in Website:
+				if website in file_content:
+					tk.Label(root2, text = 'Already Blocked' , font = 'arial 12 bold').place(x=200,y=200)
+					pass
+				else:
+					host_file.write(ip_address + " " + website + '\n')
+					tk.Label(root2, text = "Blocked", font = 'arial 12 bold').place(x=230,y =200)
+
+	block = tk.Button(root2, text = 'Block',pady = 5,command = Blocker ,width = 6, bg = 'red', activebackground = 'sky blue')
+	block.place(x = 230, y = 150)
+
+	root2.mainloop()
+
+bring_focus = tk.Button(root, text = 'Go to Proxy Server', padx = 45, pady = 45, command = focus_mode).grid(row = 0, column = 0)
+bring_block = tk.Button(root, text = 'Go to Website Blocker', padx = 45, pady = 45, command = block).grid(row = 0, column = 1)
 
 root.mainloop()
-
