@@ -28,6 +28,22 @@ def set_key(name, value):
 	_, reg_type = winreg.QueryValueEx(INTERNET_SETTINGS, name)
 	winreg.SetValueEx(INTERNET_SETTINGS, name, 0, reg_type, value)
 
+def proxy_on():
+    set_key('ProxyEnable', 1)
+    
+    unblock = input('Enter the site you want to unblock - ONLY 1: ')
+    print("If you accidentally close the application and block all the sites please contact this email /n noreply123.InTheZone@gmail.com")
+    set_key('ProxyServer', '{}:443'.format(unblock))
+    set_key('ProxyOverride', '{}:443'.format(unblock))
+
+    INTERNET_OPTION_REFRESH = 37
+    INTERNET_OPTION_SETTINGS_CHANGED = 39
+    
+    internet_set_option = ctypes.windll.Wininet.InternetSetOptionW
+
+    internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
+    internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)
+
 def proxy_off():
 	set_key('ProxyEnable', 0)
 	
@@ -39,23 +55,10 @@ def proxy_off():
 	internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
 	internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)	
 
-def proxy_on():
-	set_key('ProxyEnable', 1)
-
-	set_key('ProxyServer', u'https://teams.microsoft.com:443')
-	set_key('ProxyOverride', u'https://teams.microsoft.com:443')
-
-	INTERNET_OPTION_REFRESH = 37
-	INTERNET_OPTION_SETTINGS_CHANGED = 39
-
-	internet_set_option = ctypes.windll.Wininet.InternetSetOptionW
-
-	internet_set_option(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0)
-	internet_set_option(0, INTERNET_OPTION_REFRESH, 0, 0)
-
 def focus_mode():
     root1 = tk.Tk()
-    root1.title('In The Zone! - Focus Generator')
+    root1.title('In The Zone! - Focus Generator (Windows Only)')
+        
     def block_sites_label():
         mylabel = tk.Label(root1, text = "Starting to block sites").grid(row = 3, column = 0)
         proxy_on()
@@ -64,59 +67,149 @@ def focus_mode():
         mylabel2 = tk.Label(root1, text="Starting to unblock sites").grid(row = 3, column = 1)
         proxy_off()
 
-    focus_mode_off = tk.Button(root1, text = "Turn Focus-Mode off", padx = 55, pady = 45, command = unblock_sites_label, bg = "red")
-    focus_mode_on = tk.Button(root1, text = "Turn Focus-Mode on", padx = 50, pady = 45, command = block_sites_label, bg = "green")
-
-    e = tk.Entry(root1, width = 70)
-
-    e.insert(0, "Add sites that you want to unblock. Seperate with comma ','")
-
-    e.grid(row = 0, column = 0, columnspan = 4)
-
+    focus_mode_off = tk.Button(root1, text = "Turn Focus-Mode off (Click to start)", padx = 55, pady = 45, command = unblock_sites_label, bg = "red")
+    focus_mode_on = tk.Button(root1, text = "Turn Focus-Mode on (Click to start)", padx = 50, pady = 45, command = block_sites_label, bg = "green")
+    
     focus_mode_on.grid(row = 2, column = 0)
     focus_mode_off.grid(row = 2, column = 1)
-
+    
     root1.mainloop()
 
 def block():
     root2 = tk.Tk()
-    root2.title('In The Zone! - Website Blocker (MACOS)')
-    host_path ='C:\Windows\System32\drivers\etc\hosts'
-    ip_address = '127.0.0.1'
+    root2.title('In The Zone! - Website Blocker')
     tk.Label(root2, text ='WEBSITE BLOCKER' , font ='arial 20 bold').pack()
     Websites = tk.Text(root2, font = 'arial 10', height='2', width = '40', wrap = tk.WORD, padx=5, pady=5)
-    Websites.place(x= 140,y = 60)
+    Websites.place(x= 140, y = 60)
 
     def Blocker():
-        sites_to_block = Websites.get(0.0, tk.END)
-        sites_to_block = sites_to_block.split(',')
-        Linux_host = '/etc/hosts'
-        Window_host = r"C:\Windows\System32\drivers\etc\hosts"
-        default_hoster = Linux_host
-        redirect = "127.0.0.1"
-        def block_websites(start_hour , end_hour):
+        operation = input('Enter your operating system: ')
+        operation.lower()
+        if operation == 'windows':
+            workingheend, workingstart = 0, 0
+            workingstart = int(input("When do you want to start working hours? on the 24 hour clock "))
+            workingheend = int(input("When do you want to end working hours? on the 24 hour clock "))
+            if workingstart > 24 or workingheend > 24:
+                print('Not accepted!')
+                workingstart = int(input("When do you want to start working hours? on the 24 hour clock "))
+                workingheend = int(input("When do you want to end working hours? on the 24 hour clock "))
+            else:
+                print('Accepted!')
+                
+            hosts_path = r"C:\Windows\System32\drivers\etc\hosts"   # r is for raw string
+            hosts_temp = "hosts"
+            redirect = "127.0.0.1"
+            websitblock = input("What sites do you want to block? Seperate them  with a comma.")
+            
+            web_sites_list = websitblock.split(',')     
+
             while True:
-                if dt(dt.now().year, dt.now().month, dt.now().day,start_hour)< dt.now() < dt(dt.now().year, dt.now().month, dt.now().day,end_hour): 
-                    with open(default_hoster, 'r+') as hostfile:
-                        hosts = hostfile.read()
-                        for site in sites_to_block:
-                            if site not in hosts:
-                                hostfile.write(redirect +' ' + site + '\n')
+                if dt(dt.now().year, dt.now().month, dt.now().day, workingstart) < dt.now() < dt(dt.now().year, dt.now().month, dt.now().day,workingheend):
+                    print("Working hours")
+                    with open(hosts_path, "r+") as file:
+                        content = file.read()
+                        for website in web_sites_list:
+                            if website in content:
+                                pass
+                            else:
+                                file.write(redirect+" "+website+"\n")
                 else:
-                    with open(default_hoster, 'r+') as hostfile:
-                        hosts = hostfile.readlines()
-                        hostfile.seek(0)
-                        for host in hosts:
-                            if not any(site in host for site in sites_to_block):
-                                hostfile.write(host)
-                        hostfile.truncate()
-                time.sleep(3)
-        block_websites(0, 1)
-    block = tk.Button(root2, text = 'Block',pady = 5,command = Blocker ,width = 6, bg = 'red', activebackground = 'sky blue')
+                    print("Fun time")
+                    with open(hosts_path, "r+") as file:
+                        content = file.readlines()
+                        file.seek(0)  # reset the pointer to the top of the text file
+                        for line in content:
+                            # here comes the tricky line, basically we overwrite the whole file
+                            if not any(website in line for website in web_sites_list):
+                                file.write(line)
+                            # do nothing otherwise
+                        file.truncate() # this line is used to delete the trailing lines (that contain DNS)
+                time.sleep(5)
+        elif operation == 'linux':
+            workingheend, workingstart = 0, 0
+            workingstart = int(input("When do you want to start working hours? on the 24 hour clock "))
+            workingheend = int(input("When do you want to end working hours? on the 24 hour clock "))
+            if workingstart > 24 or workingheend > 24:
+                print('Not accepted. Try again')
+                workingstart = int(input("When do you want to start working hours? on the 24 hour clock "))
+                workingheend = int(input("When do you want to end working hours? on the 24 hour clock "))
+            else:
+                print('Accepted!')
+
+            hosts_path = r"/etc/hosts"   # r is for raw string
+            hosts_temp = "hosts"
+            redirect = "127.0.0.1"
+            websitblock = input("What sites do you want to block? Seperate them  with a comma.")
+
+            web_sites_list = websitblock.split(',')     
+
+            while True:
+                if dt(dt.now().year, dt.now().month, dt.now().day, workingstart) < dt.now() < dt(dt.now().year, dt.now().month, dt.now().day,workingheend):
+    
+                    with open(hosts_path, "r+") as file:
+                        content = file.read()
+                        for website in web_sites_list:
+                            if website in content:
+                                pass
+                            else:
+                                file.write(redirect+" "+website+"\n")
+                else:
+                    print("Fun time")
+                    with open(hosts_path, "r+") as file:
+                        content = file.readlines()
+                        file.seek(0)  
+                        for line in content:
+                            
+                            if not any(website in line for website in web_sites_list):
+                                file.write(line)
+                            
+                        file.truncate() # this line is used to delete the trailing lines (that contain DNS)
+                time.sleep(5) 
+        elif operation == 'mac':
+            workingheend, workingstart = 0, 0
+            workingstart = int(input("When do you want to start working hours? on the 24 hour clock "))
+            workingheend = int(input("When do you want to end working hours? on the 24 hour clock "))
+            if workingstart > 24 or workingheend > 24:
+                print('Not accepted! - Try again!')
+                workingstart = int(input("When do you want to start working hours? on the 24 hour clock "))
+                workingheend = int(input("When do you want to end working hours? on the 24 hour clock "))                
+
+            else:
+                print('Accepted!')
+                
+            hosts_path = r"/private/etc/hosts"   # r is for raw string
+            hosts_temp = "hosts"
+            redirect = "127.0.0.1"
+            websitblock = input("What sites do you want to block? Seperate them  with a comma.")
+            
+            web_sites_list = websitblock.split(',')     
+
+            while True:
+                if dt(dt.now().year, dt.now().month, dt.now().day, workingstart) < dt.now() < dt(dt.now().year, dt.now().month, dt.now().day,workingheend):
+                        print("Working hours")
+                        with open(hosts_path, "r+") as file:
+                            content = file.read()
+                            for website in web_sites_list:
+                                if website in content:
+                                    pass
+                                else:
+                                    file.write(redirect+" "+website+"\n")
+                else:
+                    print("Fun time")
+                    with open(hosts_path, "r+") as file:
+                        content = file.readlines()
+                        file.seek(0)  # reset the pointer to the top of the text file
+                        for line in content:
+                                # here comes the tricky line, basically we overwrite the whole file
+                            if not any(website in line for website in web_sites_list):
+                                file.write(line)
+                                # do nothing otherwise
+                            file.truncate() # this line is used to delete the trailing lines (that contain DNS)
+                time.sleep(5)
+    block = tk.Button(root2, text = 'Click to start',pady = 5,command = Blocker ,width = 10, bg = 'red', activebackground = 'sky blue')
     block.place(x = 230, y = 150)
     
     root2.mainloop()
-    
 
 def menu():
     root = tk.Tk()
